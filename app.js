@@ -136,12 +136,12 @@ function renderTrades(trades) {
   const closed = trades.filter((t) => t.closed);
   const body = $("tradesBody");
   if (!closed.length) {
-    body.innerHTML = `<tr><td colspan="10" class="empty">No closed trades yet — a position may be open.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="9" class="empty">No closed trades yet — a position may be open.</td></tr>`;
     return;
   }
   body.innerHTML = "";
   // Newest first.
-  closed.slice().reverse().forEach((t, i) => {
+  closed.slice().reverse().forEach((t) => {
     const ret = Number(t.return_pct);
     const pnl = tradePnlUsd(t);
     const held = fmtDuration(new Date(t.closed_at) - new Date(t.opened_at));
@@ -149,7 +149,6 @@ function renderTrades(trades) {
     const sideCls = (t.direction || "long") === "long" ? "side-long" : "side-short";
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${closed.length - i}</td>
       <td class="${sideCls}">${side}</td>
       <td>${fmtTime(t.opened_at)}</td>
       <td>${fmtTime(t.closed_at)}</td>
@@ -303,48 +302,6 @@ async function renderFiles() {
   }
 }
 
-async function renderBroker() {
-  // Real Bybit position (true side).
-  try {
-    const pos = await getJSON("/api/broker/position");
-    const el = $("bbPos"), hint = $("bbPosHint");
-    if (!pos.broker) {
-      el.textContent = "sim mode"; el.className = "value";
-      hint.textContent = "worker not connected to a broker";
-    } else if (!pos.position) {
-      el.textContent = "Flat"; el.className = "value";
-      hint.textContent = "no open position on Bybit";
-    } else {
-      const s = pos.position.side;
-      el.textContent = s.toUpperCase();
-      el.className = "value " + (s === "long" ? "side-long" : "side-short");
-      hint.textContent = `entry ${Number(pos.position.entry_price).toFixed(2)} · ${pos.position.amount} BTC`;
-    }
-  } catch (e) { $("bbPos").textContent = "—"; }
-
-  // Real Bybit fills (buy/sell).
-  try {
-    const fills = await getJSON("/api/broker/fills");
-    const body = $("bbFills");
-    if (!fills.length) {
-      body.innerHTML = `<tr><td colspan="5" class="empty">No Bybit fills yet</td></tr>`;
-      return;
-    }
-    body.innerHTML = "";
-    fills.slice().reverse().forEach((f) => {
-      const sideCls = f.side === "buy" ? "side-long" : "side-short";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${fmtTime(f.time)}</td>
-        <td class="${sideCls}">${(f.side || "").toUpperCase()}</td>
-        <td>${Number(f.price).toFixed(2)}</td>
-        <td>${f.amount}</td>
-        <td>${(f.order || "").slice(0, 8)}</td>`;
-      body.appendChild(tr);
-    });
-  } catch (e) { /* leave loading text */ }
-}
-
 async function refresh() {
   $("apiUrl").textContent = API_BASE || "(not configured)";
   if (!API_BASE || API_BASE.includes("__API_BASE__")) {
@@ -367,7 +324,6 @@ async function refresh() {
     renderLive(hb, strat);
     renderImprovements(history);
     drawChart(prices, trades);
-    renderBroker();
     renderFiles();
     $("updatedAt").textContent = new Date().toLocaleString();
   } catch (err) {

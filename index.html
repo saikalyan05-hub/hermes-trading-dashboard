@@ -86,24 +86,6 @@
   </section>
 
   <section>
-    <h2>Live on Bybit (Demo)</h2>
-    <p class="sub">The <b>real</b> position &amp; fills on your Bybit account — long or short, whoever opened them.</p>
-    <div class="cards">
-      <div class="card wide">
-        <div class="label">Open position on Bybit</div>
-        <div class="value" id="bbPos">—</div>
-        <div class="hint" id="bbPosHint">—</div>
-      </div>
-    </div>
-    <div class="table-wrap" style="margin-top:12px;">
-      <table>
-        <thead><tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th><th>Order</th></tr></thead>
-        <tbody id="bbFills"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section>
     <h2>Price &amp; trades</h2>
     <p class="sub">Recent BTC/USDT price the agent saw. <span class="dot green"></span> long entry &nbsp; <span class="dot orange"></span> short entry &nbsp; <span class="dot red"></span> exit</p>
     <div class="chart-wrap">
@@ -113,17 +95,18 @@
   </section>
 
   <section>
-    <h2>Trades</h2>
+    <h2>Long &amp; short positions</h2>
+    <p class="sub">Every completed trade the agent took — <span class="side-long">LONG</span> or <span class="side-short">SHORT</span> — with full detail.</p>
     <div class="table-wrap">
       <table id="tradesTable">
         <thead>
           <tr>
-            <th>#</th><th>Side</th><th>Opened</th><th>Closed</th><th>Held</th>
+            <th>Side</th><th>Opened</th><th>Closed</th><th>Held</th>
             <th>Entry</th><th>Exit</th><th>Return</th><th>P&amp;L $</th><th>Exit reason</th>
           </tr>
         </thead>
         <tbody id="tradesBody">
-          <tr><td colspan="10" class="empty">Loading…</td></tr>
+          <tr><td colspan="9" class="empty">Loading…</td></tr>
         </tbody>
       </table>
     </div>
