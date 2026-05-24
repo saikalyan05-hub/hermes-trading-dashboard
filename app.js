@@ -217,7 +217,7 @@ function renderImprovements(history) {
   });
 }
 
-function drawChart(prices, trades) {
+function drawChart(prices, trades, hb) {
   const canvas = $("priceChart");
   const empty = $("chartEmpty");
   if (!Array.isArray(prices) || prices.length < 2) {
@@ -245,6 +245,13 @@ function drawChart(prices, trades) {
     pMin = Math.min(pMin, t.entry_price, t.exit_price);
     pMax = Math.max(pMax, t.entry_price, t.exit_price);
   });
+  // Include the open position's entry/SL/TP so their lines are on-screen.
+  const pos = hb && hb.position_open && hb.position ? hb.position : null;
+  if (pos) {
+    [pos.entry, pos.stop_loss, pos.take_profit].forEach((lvl) => {
+      if (lvl) { pMin = Math.min(pMin, lvl); pMax = Math.max(pMax, lvl); }
+    });
+  }
   if (pMin === pMax) { pMin -= 1; pMax += 1; }
   const padP = (pMax - pMin) * 0.08; pMin -= padP; pMax += padP;
 
@@ -279,6 +286,22 @@ function drawChart(prices, trades) {
     marker(t.opened_at, t.entry_price, entryColor);
     marker(t.closed_at, t.exit_price, "#ff5c5c");
   });
+
+  // Open-position lines: TP (green), entry (grey), SL (red) — dashed, labelled.
+  if (pos) {
+    const hline = (v, color, label) => {
+      if (v == null || v < pMin || v > pMax) return;
+      const yy = y(v);
+      ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.setLineDash([6, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(padL + W, yy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = color; ctx.font = "10px sans-serif";
+      ctx.fillText(`${label} ${Number(v).toFixed(0)}`, padL + 4, yy - 3);
+    };
+    hline(pos.take_profit, "#2ecc71", "TP");
+    hline(pos.entry, "#8b98ab", "entry");
+    hline(pos.stop_loss, "#ff5c5c", "SL");
+  }
 }
 
 let _filesLoaded = false;
@@ -337,7 +360,7 @@ async function refresh() {
     renderTrades(trades);
     renderLive(hb, strat);
     renderImprovements(history);
-    drawChart(prices, trades);
+    drawChart(prices, trades, hb);
     renderFiles();
     $("updatedAt").textContent = new Date().toLocaleString();
   } catch (err) {
