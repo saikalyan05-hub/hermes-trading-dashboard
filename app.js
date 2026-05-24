@@ -71,6 +71,31 @@ function renderSummary(trades) {
   $("pnlPct").textContent = closed.length ? `compounded ${pct(totalPct)}` : "no closed trades yet";
 }
 
+function tradeInvestedUsd(t) {
+  return Number(t.amount || 0) * Number(t.entry_price || 0);
+}
+
+function renderMoney(trades) {
+  const closed = trades.filter((t) => t.closed);
+  let gains = 0, losses = 0, grossInvested = 0;
+  closed.forEach((t) => {
+    const pnl = tradePnlUsd(t);
+    if (pnl >= 0) gains += pnl; else losses += -pnl;
+    grossInvested += tradeInvestedUsd(t);
+  });
+
+  const perTrade = closed.length ? tradeInvestedUsd(closed[closed.length - 1]) : 0;
+  $("investedPerTrade").textContent = closed.length ? "$" + perTrade.toFixed(2) : "—";
+  $("totalGains").textContent = closed.length ? "+$" + gains.toFixed(2) : "—";
+  $("totalLosses").textContent = closed.length ? "-$" + losses.toFixed(2) : "—";
+  $("grossInvested").textContent = closed.length ? "$" + grossInvested.toFixed(2) : "—";
+
+  const wins = closed.filter((t) => tradePnlUsd(t) >= 0).length;
+  const loss = closed.length - wins;
+  $("gainsHint").textContent = `${wins} winning trade${wins === 1 ? "" : "s"}`;
+  $("lossesHint").textContent = `${loss} losing trade${loss === 1 ? "" : "s"}`;
+}
+
 function renderImprovement(trades) {
   const closed = trades.filter((t) => t.closed);
   const n = closed.length;
@@ -165,6 +190,7 @@ async function refresh() {
     ]);
     hideBanner();
     renderSummary(trades);
+    renderMoney(trades);
     renderImprovement(trades);
     renderTrades(trades);
     renderLive(hb, strat);
