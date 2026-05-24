@@ -167,14 +167,28 @@ function renderLive(hb, strat) {
   const ps = $("posState");
   ps.textContent = open ? "In position" : (hb && hb.status === "ok" ? "Flat" : "—");
   ps.className = "value " + (open ? "pos" : "");
-  if (hb && hb.price != null) {
-    $("liveInfo").textContent =
-      `RSI ${Number(hb.rsi).toFixed(1)} · $${Number(hb.price).toFixed(2)} · ${hb.signal_source || ""}`;
+  if (hb) {
+    const trend = hb.trend_4h ? `4H ${hb.trend_4h}` : "";
+    const px = hb.price != null ? `$${Number(hb.price).toFixed(2)}` : "";
+    $("liveInfo").textContent = [trend, px].filter(Boolean).join(" · ") || "—";
   }
   if (strat && strat.version) {
     $("stratVer").textContent = "v" + strat.version;
-    const thr = strat.entry ? strat.entry.threshold : "?";
-    $("stratHint").textContent = `RSI entry < ${thr} · stop ${strat.stop_loss_pct}%`;
+    $("stratHint").textContent =
+      `order-block · trend EMA ${strat.trend_ema} · lookback ${strat.ob_lookback} · RR 1:${strat.rr}`;
+  }
+
+  // Open position box (entry / stop-loss / take-profit).
+  const opEl = $("openPos"), opHint = $("openPosHint");
+  if (open && hb.position) {
+    const p = hb.position;
+    const sideCls = p.side === "long" ? "side-long" : "side-short";
+    opEl.innerHTML = `<span class="${sideCls}">${(p.side || "").toUpperCase()}</span> @ ${p.entry}`;
+    opHint.innerHTML = `<span class="neg">SL ${p.stop_loss}</span> &nbsp; <span class="pos">TP ${p.take_profit}</span>`;
+  } else {
+    opEl.textContent = "Flat";
+    opEl.className = "value";
+    opHint.textContent = "no open position";
   }
 }
 
