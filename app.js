@@ -176,6 +176,31 @@ function renderLive(hb, strat) {
   }
 }
 
+function renderImprovements(history) {
+  const box = $("improvements");
+  if (!Array.isArray(history) || !history.length) {
+    box.innerHTML = `<div class="empty">No improvements yet — the agent reflects every 5 closed trades.</div>`;
+    return;
+  }
+  box.innerHTML = "";
+  history.slice().reverse().forEach((h) => {
+    const score = h.observed && typeof h.observed.score === "number"
+      ? h.observed.score.toFixed(3) : "—";
+    const reason = h.reason || h.rule || "";
+    const item = document.createElement("div");
+    item.className = "tl-item";
+    item.innerHTML = `
+      <div class="tl-head">
+        <span class="tl-ver">v${h.from_version || "?"} &rarr; v${h.to_version || "?"}</span>
+        <span class="tl-time">${fmtTime(h.ts)}</span>
+      </div>
+      <div class="tl-change"><code>${h.variable || "?"}</code> = <b>${h.new_value}</b></div>
+      <div class="tl-reason">${reason}</div>
+      <div class="tl-meta">mode: ${h.mode || "?"} · score at change: ${score}</div>`;
+    box.appendChild(item);
+  });
+}
+
 async function refresh() {
   $("apiUrl").textContent = API_BASE || "(not configured)";
   if (!API_BASE || API_BASE.includes("__API_BASE__")) {
@@ -183,10 +208,11 @@ async function refresh() {
     return;
   }
   try {
-    const [trades, hb, strat] = await Promise.all([
+    const [trades, hb, strat, history] = await Promise.all([
       getJSON("/api/trades"),
       getJSON("/api/heartbeat").catch(() => ({})),
       getJSON("/api/strategy").catch(() => ({})),
+      getJSON("/api/history").catch(() => ([])),
     ]);
     hideBanner();
     renderSummary(trades);
@@ -194,6 +220,7 @@ async function refresh() {
     renderImprovement(trades);
     renderTrades(trades);
     renderLive(hb, strat);
+    renderImprovements(history);
     $("updatedAt").textContent = new Date().toLocaleString();
   } catch (err) {
     showBanner(

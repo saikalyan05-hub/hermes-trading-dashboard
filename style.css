@@ -101,6 +101,21 @@ tbody tr { border-top: 1px solid var(--border); }
 tbody tr:hover { background: var(--card2); }
 td.empty { text-align: center; color: var(--muted); padding: 24px; }
 
+.timeline { display: flex; flex-direction: column; gap: 10px; }
+.tl-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.tl-head { display: flex; justify-content: space-between; align-items: center; }
+.tl-ver { font-weight: 700; color: var(--accent); }
+.tl-time { color: var(--muted); font-size: 12px; }
+.tl-change { margin-top: 6px; font-size: 15px; }
+.tl-reason { color: var(--text); font-size: 13px; margin-top: 4px; }
+.tl-meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
 footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
 code { background: var(--card2); padding: 2px 6px; border-radius: 5px; }
 
