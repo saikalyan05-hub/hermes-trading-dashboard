@@ -86,6 +86,24 @@
   </section>
 
   <section>
+    <h2>Live on Bybit (Demo)</h2>
+    <p class="sub">The <b>real</b> position &amp; fills on your Bybit account — long or short, whoever opened them.</p>
+    <div class="cards">
+      <div class="card wide">
+        <div class="label">Open position on Bybit</div>
+        <div class="value" id="bbPos">—</div>
+        <div class="hint" id="bbPosHint">—</div>
+      </div>
+    </div>
+    <div class="table-wrap" style="margin-top:12px;">
+      <table>
+        <thead><tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th><th>Order</th></tr></thead>
+        <tbody id="bbFills"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
     <h2>Price &amp; trades</h2>
     <p class="sub">Recent BTC/USDT price the agent saw. <span class="dot green"></span> long entry &nbsp; <span class="dot orange"></span> short entry &nbsp; <span class="dot red"></span> exit</p>
     <div class="chart-wrap">
