@@ -86,17 +86,26 @@
   </section>
 
   <section>
+    <h2>Price &amp; trades</h2>
+    <p class="sub">Recent BTC/USDT price the agent saw. <span class="dot green"></span> long entry &nbsp; <span class="dot orange"></span> short entry &nbsp; <span class="dot red"></span> exit</p>
+    <div class="chart-wrap">
+      <canvas id="priceChart" height="320"></canvas>
+      <div id="chartEmpty" class="empty">Collecting price data…</div>
+    </div>
+  </section>
+
+  <section>
     <h2>Trades</h2>
     <div class="table-wrap">
       <table id="tradesTable">
         <thead>
           <tr>
-            <th>#</th><th>Opened</th><th>Closed</th><th>Held</th>
+            <th>#</th><th>Side</th><th>Opened</th><th>Closed</th><th>Held</th>
             <th>Entry</th><th>Exit</th><th>Return</th><th>P&amp;L $</th><th>Exit reason</th>
           </tr>
         </thead>
         <tbody id="tradesBody">
-          <tr><td colspan="9" class="empty">Loading…</td></tr>
+          <tr><td colspan="10" class="empty">Loading…</td></tr>
         </tbody>
       </table>
     </div>

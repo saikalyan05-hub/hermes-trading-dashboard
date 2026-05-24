@@ -136,7 +136,7 @@ function renderTrades(trades) {
   const closed = trades.filter((t) => t.closed);
   const body = $("tradesBody");
   if (!closed.length) {
-    body.innerHTML = `<tr><td colspan="9" class="empty">No closed trades yet — a position may be open.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="10" class="empty">No closed trades yet — a position may be open.</td></tr>`;
     return;
   }
   body.innerHTML = "";
@@ -145,9 +145,12 @@ function renderTrades(trades) {
     const ret = Number(t.return_pct);
     const pnl = tradePnlUsd(t);
     const held = fmtDuration(new Date(t.closed_at) - new Date(t.opened_at));
+    const side = (t.direction || "long").toUpperCase();
+    const sideCls = (t.direction || "long") === "long" ? "side-long" : "side-short";
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${closed.length - i}</td>
+      <td class="${sideCls}">${side}</td>
       <td>${fmtTime(t.opened_at)}</td>
       <td>${fmtTime(t.closed_at)}</td>
       <td>${held}</td>
@@ -201,6 +204,70 @@ function renderImprovements(history) {
   });
 }
 
+function drawChart(prices, trades) {
+  const canvas = $("priceChart");
+  const empty = $("chartEmpty");
+  if (!Array.isArray(prices) || prices.length < 2) {
+    canvas.style.display = "none"; empty.style.display = "block"; return;
+  }
+  canvas.style.display = "block"; empty.style.display = "none";
+
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || canvas.parentElement.clientWidth || 800;
+  const cssH = 320;
+  canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  const padL = 60, padR = 14, padT = 12, padB = 26;
+  const W = cssW - padL - padR, H = cssH - padT - padB;
+  const times = prices.map((p) => new Date(p.t).getTime());
+  const vals = prices.map((p) => p.price);
+  const tMin = Math.min(...times), tMax = Math.max(...times);
+  let pMin = Math.min(...vals), pMax = Math.max(...vals);
+
+  const closed = (trades || []).filter((t) => t.closed);
+  closed.forEach((t) => {
+    pMin = Math.min(pMin, t.entry_price, t.exit_price);
+    pMax = Math.max(pMax, t.entry_price, t.exit_price);
+  });
+  if (pMin === pMax) { pMin -= 1; pMax += 1; }
+  const padP = (pMax - pMin) * 0.08; pMin -= padP; pMax += padP;
+
+  const x = (t) => padL + (tMax === tMin ? 0 : (t - tMin) / (tMax - tMin)) * W;
+  const y = (v) => padT + (1 - (v - pMin) / (pMax - pMin)) * H;
+
+  ctx.strokeStyle = "#232c3b"; ctx.fillStyle = "#8b98ab";
+  ctx.font = "11px sans-serif"; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const v = pMin + (pMax - pMin) * i / 4, yy = y(v);
+    ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(padL + W, yy); ctx.stroke();
+    ctx.fillText(v.toFixed(0), 6, yy + 3);
+  }
+  ctx.fillText(new Date(tMin).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), padL, cssH - 8);
+  ctx.fillText(new Date(tMax).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), padL + W - 34, cssH - 8);
+
+  ctx.strokeStyle = "#4c8dff"; ctx.lineWidth = 1.6; ctx.beginPath();
+  prices.forEach((p, i) => {
+    const xx = x(times[i]), yy = y(p.price);
+    i ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
+  });
+  ctx.stroke();
+
+  const marker = (t, v, color) => {
+    const tt = new Date(t).getTime();
+    if (tt < tMin || tt > tMax) return;
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x(tt), y(v), 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#0c1018"; ctx.lineWidth = 1; ctx.stroke();
+  };
+  closed.forEach((t) => {
+    const entryColor = (t.direction || "long") === "long" ? "#2ecc71" : "#ff9f43";
+    marker(t.opened_at, t.entry_price, entryColor);
+    marker(t.closed_at, t.exit_price, "#ff5c5c");
+  });
+}
+
 let _filesLoaded = false;
 
 async function loadFile(path, liEl) {
@@ -243,11 +310,12 @@ async function refresh() {
     return;
   }
   try {
-    const [trades, hb, strat, history] = await Promise.all([
+    const [trades, hb, strat, history, prices] = await Promise.all([
       getJSON("/api/trades"),
       getJSON("/api/heartbeat").catch(() => ({})),
       getJSON("/api/strategy").catch(() => ({})),
       getJSON("/api/history").catch(() => ([])),
+      getJSON("/api/prices").catch(() => ([])),
     ]);
     hideBanner();
     renderSummary(trades);
@@ -256,6 +324,7 @@ async function refresh() {
     renderTrades(trades);
     renderLive(hb, strat);
     renderImprovements(history);
+    drawChart(prices, trades);
     renderFiles();
     $("updatedAt").textContent = new Date().toLocaleString();
   } catch (err) {

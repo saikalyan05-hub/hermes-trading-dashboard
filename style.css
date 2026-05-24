@@ -101,6 +101,21 @@ tbody tr { border-top: 1px solid var(--border); }
 tbody tr:hover { background: var(--card2); }
 td.empty { text-align: center; color: var(--muted); padding: 24px; }
 
+.chart-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+}
+#priceChart { width: 100%; display: block; }
+.chart-wrap .empty { padding: 40px; text-align: center; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; }
+.dot.green { background: var(--green); }
+.dot.red { background: var(--red); }
+.dot.orange { background: #ff9f43; }
+.side-long { color: var(--green); font-weight: 600; }
+.side-short { color: #ff9f43; font-weight: 600; }
+
 .timeline { display: flex; flex-direction: column; gap: 10px; }
 .tl-item {
   background: var(--card);
