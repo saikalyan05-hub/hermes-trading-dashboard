@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hermes Trading Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Hermes Trading <span class="paper">PAPER</span></h1>
+      <p class="sub">BTC/USDT · self-improving agent · live from Railway</p>
+    </div>
+    <div class="refresh">
+      <button id="refreshBtn">Refresh now</button>
+      <div class="updated">Updated: <span id="updatedAt">—</span></div>
+      <div class="updated">Auto-refresh every 3 hours</div>
+    </div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <section class="cards">
+    <div class="card">
+      <div class="label">Closed trades</div>
+      <div class="value" id="tradeCount">—</div>
+      <div class="hint" id="winLoss">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Total P&amp;L (simulated $)</div>
+      <div class="value" id="pnlUsd">—</div>
+      <div class="hint" id="pnlPct">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Win rate</div>
+      <div class="value" id="winRate">—</div>
+      <div class="hint">share of trades that closed positive</div>
+    </div>
+    <div class="card">
+      <div class="label">Current state</div>
+      <div class="value" id="posState">—</div>
+      <div class="hint" id="liveInfo">—</div>
+    </div>
+  </section>
+
+  <section class="cards">
+    <div class="card wide">
+      <div class="label">Improvement — latest vs previous trade</div>
+      <div class="value" id="impPrev">—</div>
+      <div class="hint" id="impPrevHint">—</div>
+    </div>
+    <div class="card wide">
+      <div class="label">Improvement — latest vs last 5 trades avg</div>
+      <div class="value" id="imp5">—</div>
+      <div class="hint" id="imp5Hint">—</div>
+    </div>
+    <div class="card">
+      <div class="label">Strategy</div>
+      <div class="value" id="stratVer">—</div>
+      <div class="hint" id="stratHint">—</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Trades</h2>
+    <div class="table-wrap">
+      <table id="tradesTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Opened</th><th>Closed</th><th>Held</th>
+            <th>Entry</th><th>Exit</th><th>Return</th><th>P&amp;L $</th><th>Exit reason</th>
+          </tr>
+        </thead>
+        <tbody id="tradesBody">
+          <tr><td colspan="9" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    Paper/simulated trading only — no real money. Data source:
+    <code id="apiUrl"></code>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
