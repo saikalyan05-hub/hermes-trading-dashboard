@@ -201,6 +201,41 @@ function renderImprovements(history) {
   });
 }
 
+let _filesLoaded = false;
+
+async function loadFile(path, liEl) {
+  const view = $("fileView");
+  view.textContent = "Loading " + path + " …";
+  document.querySelectorAll("#fileList li").forEach((li) => li.classList.remove("active"));
+  if (liEl) liEl.classList.add("active");
+  try {
+    const data = await getJSON("/api/file?path=" + encodeURIComponent(path));
+    view.textContent = data.content != null ? data.content : "(empty)";
+  } catch (err) {
+    view.textContent = "Couldn't load " + path + ": " + err.message;
+  }
+}
+
+async function renderFiles() {
+  if (_filesLoaded) return; // file list is static; load once
+  const list = $("fileList");
+  try {
+    const files = await getJSON("/api/files");
+    if (!files.length) { list.innerHTML = `<li class="empty">No files</li>`; return; }
+    list.innerHTML = "";
+    files.forEach((f) => {
+      const li = document.createElement("li");
+      li.textContent = f.path;
+      li.title = f.path + " (" + f.size + " bytes)";
+      li.addEventListener("click", () => loadFile(f.path, li));
+      list.appendChild(li);
+    });
+    _filesLoaded = true;
+  } catch (err) {
+    list.innerHTML = `<li class="empty">Couldn't load file list: ${err.message}</li>`;
+  }
+}
+
 async function refresh() {
   $("apiUrl").textContent = API_BASE || "(not configured)";
   if (!API_BASE || API_BASE.includes("__API_BASE__")) {
@@ -221,6 +256,7 @@ async function refresh() {
     renderTrades(trades);
     renderLive(hb, strat);
     renderImprovements(history);
+    renderFiles();
     $("updatedAt").textContent = new Date().toLocaleString();
   } catch (err) {
     showBanner(

@@ -116,6 +116,39 @@ td.empty { text-align: center; color: var(--muted); padding: 24px; }
 .tl-reason { color: var(--text); font-size: 13px; margin-top: 4px; }
 .tl-meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
 
+.code-browser {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  height: 420px;
+}
+.file-list {
+  margin: 0; padding: 6px; list-style: none;
+  background: var(--card2); overflow-y: auto; border-right: 1px solid var(--border);
+}
+.file-list li {
+  padding: 7px 10px; border-radius: 6px; cursor: pointer;
+  font-family: ui-monospace, "Consolas", monospace; font-size: 12px;
+  color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-list li:hover { background: var(--card); }
+.file-list li.active { background: var(--accent); color: #fff; }
+.file-list li.empty { color: var(--muted); cursor: default; }
+.file-view {
+  margin: 0; padding: 14px; overflow: auto; background: var(--bg);
+  font-family: ui-monospace, "Consolas", monospace; font-size: 12.5px;
+  line-height: 1.5; color: #d7e0ea; white-space: pre;
+}
+
+@media (max-width: 800px) {
+  .code-browser { grid-template-columns: 1fr; height: auto; }
+  .file-list { max-height: 160px; }
+  .file-view { max-height: 360px; }
+}
+
 footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
 code { background: var(--card2); padding: 2px 6px; border-radius: 5px; }
 
