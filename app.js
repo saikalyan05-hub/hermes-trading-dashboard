@@ -339,6 +339,31 @@ async function renderFiles() {
   }
 }
 
+function pairFills(fills) {
+  // Real Bybit fills (oldest-first) -> paired trades. One-way account: a fill
+  // opens, the next opposite fill closes. Gives complete, accurate history.
+  const out = [];
+  let open = null;
+  for (const f of fills) {
+    const px = Number(f.price), amt = Number(f.amount);
+    if (!isFinite(px)) continue;
+    if (!open) {
+      open = { side: f.side === "buy" ? "long" : "short", entry: px, t: f.time, amount: amt };
+    } else {
+      const dir = open.side;
+      const ret = dir === "long" ? (px - open.entry) / open.entry : (open.entry - px) / open.entry;
+      out.push({
+        closed: true, direction: dir,
+        entry_price: open.entry, exit_price: px, amount: open.amount,
+        return_pct: ret, exit_reason: "closed",
+        opened_at: open.t, closed_at: f.time,
+      });
+      open = null;
+    }
+  }
+  return out;
+}
+
 async function refresh() {
   $("apiUrl").textContent = API_BASE || "(not configured)";
   if (!API_BASE || API_BASE.includes("__API_BASE__")) {
@@ -346,14 +371,18 @@ async function refresh() {
     return;
   }
   try {
-    const [trades, hb, strat, history, prices] = await Promise.all([
-      getJSON("/api/trades"),
+    const [ledger, hb, strat, history, prices, fills] = await Promise.all([
+      getJSON("/api/trades").catch(() => ([])),
       getJSON("/api/heartbeat").catch(() => ({})),
       getJSON("/api/strategy").catch(() => ({})),
       getJSON("/api/history").catch(() => ([])),
       getJSON("/api/prices").catch(() => ([])),
+      getJSON("/api/broker/fills").catch(() => ([])),
     ]);
     hideBanner();
+    // Prefer the REAL Bybit fills (paired) — complete source of truth, incl.
+    // trades closed externally. Fall back to the worker ledger (sim mode).
+    const trades = (Array.isArray(fills) && fills.length) ? pairFills(fills) : ledger;
     renderSummary(trades);
     renderMoney(trades);
     renderImprovement(trades);
